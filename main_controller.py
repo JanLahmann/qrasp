@@ -47,7 +47,7 @@ import Qconfig_IBMQ_experience
 
 # If online, enable the account based on the stored API key
 if internet_on():
-    IBMQ.enable_account(Qconfig_IBMQ_experience.APItoken)
+    provider = IBMQ.enable_account(Qconfig_IBMQ_experience.APItoken)
 else:
     hat.show_message("Offline mode")
 
@@ -141,12 +141,12 @@ def set_backend(back):
     from qiskit.providers.ibmq import least_busy
     global backend
     if back == "ibmq" and internet_on():
-        backend = IBMQ.get_backend('ibmqx2')
+        backend = provider.get_backend('ibmqx2')
         hat.show_message(backend.name())
         hat.set_pixels(IBM_Q)
     else:
         if back == "ibmq2" and internet_on():
-           backend = IBMQ.get_backend('ibmqx4')
+           backend = provider.get_backend('ibmqx4')
            hat.show_message(backend.name())
            hat.set_pixels(IBM_Q_4)
         else:
