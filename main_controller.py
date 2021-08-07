@@ -215,20 +215,10 @@ while True:
                     else:
                         if joy_event[0][1]=="middle":
                             if back == "aer":
-                                back = "ibmq"
+                                hat.show_message("Best")
+                                hat.set_pixels(IBMQ_super_position)
+                                back = "ibmq_best"
                                 set_backend(back)
                             else:
-                                if back == "ibmq":
-                                    back = "ibmq2"
-                                    set_backend(back)
-                                else:
-                                    if back == "ibmq2":
-                                       hat.show_message("Best")
-                                       hat.set_pixels(IBMQ_super_position)
-                                       back = "ibmq_best"
-                                       set_backend(back)
-                                    else:
-                                        back = "aer"
-                                        set_backend(back)
-                                    
-
+                                back = "aer"
+                                set_backend(back)
