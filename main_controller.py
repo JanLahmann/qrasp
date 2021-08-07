@@ -151,7 +151,7 @@ def set_backend(back):
            hat.set_pixels(IBM_Q_4)
         else:
             if back == "ibmq_best" and internet_on():
-               backend = least_busy(IBMQ.backends(filters=lambda x: not x.configuration().simulator))
+               backend = least_busy(provider.backends(filters=lambda x: not x.configuration().simulator))
                hat.show_message(backend.name())
                hat.set_pixels(IBM_Q_B)
             else:
