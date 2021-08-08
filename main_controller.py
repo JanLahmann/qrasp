@@ -230,10 +230,10 @@ def pushed_middle(event):
     event2 = hat.stick.wait_for_event()
     print("The joystick was {} {}".format(event2.action, event2.direction))
     if event2.action == ACTION_HELD:
-        print("event2 Middle ACTION_HELD")
+        print("Middle ACTION_HELD")
         print("Exiting...")
         hat.show_message("Exiting...")
-        sense.clear()
+        hat.clear()
         os._exit(0)
     if event.action == ACTION_PRESSED:
         print("Middle ACTION_PRESSED")
