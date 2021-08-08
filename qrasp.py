@@ -1,8 +1,7 @@
 # Main controller for Qiskit on Raspberry PI SenseHat.
 
-# Start by importing and simplifying required modules. 
+# Import required modules.
 from sense_hat import SenseHat, ACTION_PRESSED, ACTION_HELD
-#from sense_emu import SenseHat
 hat = SenseHat()
 # Set default SenseHat configuration.
 hat.clear()
@@ -64,7 +63,7 @@ def show_pic(name, pic):
     hat.set_pixels(pic)
     sleep(1)
 
-# Background icon
+# Background icons
 X = [255, 0, 255]  # Magenta
 Y = [255,192,203] # Pink
 P = [255,255,0] #Yellow
