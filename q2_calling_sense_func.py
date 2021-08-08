@@ -13,7 +13,6 @@ def execute(backend,back):
     import numpy as np
     # Set number of bits and number of shots
     n = 2
-    print(n)
     sh = 1024
     # Create a Quantum Register with n qubits
     qr = QuantumRegister(n)

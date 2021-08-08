@@ -1,10 +1,10 @@
 # Main controller for Qiskit on Raspberry PI SenseHat.
 
 # Start by importing and simplifying required modules. 
-from sense_hat import SenseHat
+from sense_hat import SenseHat, ACTION_PRESSED, ACTION_HELD
 #from sense_emu import SenseHat
 hat = SenseHat()
-import time
+from time import sleep
 
 
 # Understand which direction is down, and rotate the SenseHat display accordingly.
@@ -42,6 +42,7 @@ def internet_on():
 #Import Qiskit classes
 from qiskit import IBMQ, execute
 from qiskit import BasicAer as Aer #<-Workaround
+from qiskit.providers.ibmq import least_busy
 import Qconfig_IBMQ_experience
 # from qiskit.tools.monitor import job_monitor
 
@@ -55,6 +56,12 @@ else:
 # Set default SenseHat configuration.
 hat.clear()
 hat.low_light = True
+
+def show_pic(name, pic):
+    #global hat
+    print(name)
+    hat.set_pixels(pic)
+    sleep(4)
 
 # Background icon
 X = [255, 0, 255]  # Magenta
@@ -75,6 +82,7 @@ O, Y, O, O, X, O, Y, O,
 O, O, Y, O, X, Y, O, O,
 O, O, O, X, X, X, O, O
 ]
+show_pic("super_position", super_position)
 
 IBMQ_super_position = [
 O, O, O, Y, B, O, O, O,
@@ -86,7 +94,7 @@ O, Y, O, O, B, O, Y, O,
 O, O, Y, O, B, Y, O, O,
 O, O, O, B, B, B, O, O
 ]
-
+show_pic("IBMQ_super_position", IBMQ_super_position)
 
 IBM_Q = [
 B, B, B, W, W, B, B, B,
@@ -98,6 +106,7 @@ P, P, P, B, B, W, B, B,
 P, B, B, W, W, B, B, B,
 P, P, P, W, W, W, B, B
 ]
+show_pic("IBM_Q", IBM_Q)
 
 IBM_Q_4 = [
 B, B, B, W, W, B, B, B,
@@ -109,6 +118,7 @@ P, P, P, B, B, W, B, B,
 B, B, P, W, W, B, B, B,
 B, B, P, W, W, W, B, B
 ]
+show_pic("IBM_Q_4", IBM_Q_4)
 
 IBM_Q_B = [
 B, B, B, W, W, B, B, B,
@@ -120,9 +130,7 @@ B, P, W, B, B, W, B, B,
 P, P, P, W, W, B, B, B,
 B, P, B, W, W, W, B, B
 ]
-
-
-
+show_pic("IBM_Q_B", IBM_Q_B)
 
 IBM_AER = [
 O, O, W, W, W, W, O, O,
@@ -134,32 +142,21 @@ W, O, W, W, W, W, O, W,
 O, W, O, O, O, O, W, O,
 O, O, W, W, W, W, O, O
 ]
-         
+show_pic("IBM_AER", IBM_AER)         
 
 # Function to set the backend
 def set_backend(back):
-    from qiskit.providers.ibmq import least_busy
     global backend
-    if back == "ibmq" and internet_on():
-        backend = provider.get_backend('ibmqx2')
+    if back == "ibmq_best" and internet_on():
+        backend = least_busy(provider.backends(filters=lambda x: x.configuration().n_qubits >= 3 
+                                                        and not x.configuration().simulator
+                                                        and x.status().operational==True))        
         hat.show_message(backend.name())
-        hat.set_pixels(IBM_Q)
+        hat.set_pixels(IBM_Q_B)
     else:
-        if back == "ibmq2" and internet_on():
-           backend = provider.get_backend('ibmqx4')
-           hat.show_message(backend.name())
-           hat.set_pixels(IBM_Q_4)
-        else:
-            if back == "ibmq_best" and internet_on():
-               backend = least_busy(provider.backends(filters=lambda x: x.configuration().n_qubits >= 3 
-                                                                and not x.configuration().simulator
-                                                                and x.status().operational==True))        
-               hat.show_message(backend.name())
-               hat.set_pixels(IBM_Q_B)
-            else:
-                backend = Aer.get_backend('qasm_simulator')
-                hat.show_message(backend.name())
-                hat.set_pixels(IBM_AER)
+        backend = Aer.get_backend('qasm_simulator')
+        hat.show_message(backend.name())
+        hat.set_pixels(IBM_AER)
                 
     
 # Load the Qiskit function files. Showing messages when starting and when done.
@@ -169,7 +166,6 @@ import q2_calling_sense_func
 import q3_calling_sense_func
 import bell_calling_sense_func
 import GHZ_calling_sense_func
-#import set_backend
 
 # Initialize the backend to AER
 back = "aer" 
@@ -178,49 +174,75 @@ set_backend(back)
 
 # The main loop.
 # Use the joystick to select and execute one of the Qiskit function files.
+# see examples in https://pythonhosted.org/sense-hat/api/
 
-while True:
-    joy_event = hat.stick.get_events()
-    if len(joy_event) > 0 and joy_event[0][2]=="pressed":
-        set_display()
-        if joy_event[0][1]=="up":
-            hat.show_message("Bell")
-            if back != "aer"and internet_on():
-                hat.set_pixels(IBMQ_super_position)
-            else:
-                hat.set_pixels(super_position)
-            bell_calling_sense_func.execute(backend,back)
+def show_super_position(back):
+    global hat, super_position, IBMQ_super_position 
+    if back != "aer" and internet_on():
+        hat.set_pixels(IBMQ_super_position)
+    else:
+        hat.set_pixels(super_position)
+
+def pushed_up(event):
+    global hat, backend, back
+    if event.action == ACTION_PRESSED:
+        print("Bell on ", back)
+        hat.show_message("Bell")
+        show_super_position(back)
+        bell_calling_sense_func.execute(backend,back)
+        hat.stick.get_events() # empty the event buffer
+
+def pushed_down(event):
+    global hat, backend, back
+    if event.action == ACTION_PRESSED:
+        print("GHZ on ", back)
+        hat.show_message("GHZ")
+        show_super_position(back)
+        GHZ_calling_sense_func.execute(backend,back)
+        hat.stick.get_events() # empty the event buffer
+
+def pushed_left(event):
+    global hat, backend, back
+    if event.action == ACTION_PRESSED:
+        print("2Q on ", back)
+        hat.show_message("2Q")
+        show_super_position(back)
+        q2_calling_sense_func.execute(backend,back)
+        hat.stick.get_events() # empty the event buffer
+
+def pushed_right(event):
+    global hat, backend, back
+    if event.action == ACTION_PRESSED:
+        print("3Q on ", back)
+        hat.show_message("3Q")
+        show_super_position(back)
+        q3_calling_sense_func.execute(backend,back)
+        hat.stick.get_events() # empty the event buffer
+
+def pushed_middle(event):
+    global hat, backend, back
+    if event.action == ACTION_PRESSED:
+        print("Middle ACTION_PRESSED")
+        if back == "aer" and internet_on():
+            print("Backend: Best")
+            hat.show_message("Best")
+            back = "ibmq_best"
         else:
-            if joy_event[0][1]=="down":
-                hat.show_message("GHZ")
-                if back != "aer" and internet_on():
-                    hat.set_pixels(IBMQ_super_position)
-                else:
-                    hat.set_pixels(super_position)
-                GHZ_calling_sense_func.execute(backend,back)
-            else:
-                if joy_event[0][1]=="left":
-                    hat.show_message("2Q")
-                    if back != "aer" and internet_on():
-                        hat.set_pixels(IBMQ_super_position)
-                    else:
-                        hat.set_pixels(super_position)
-                    q2_calling_sense_func.execute(backend,back)
-                else:
-                    if joy_event[0][1]=="right":
-                        hat.show_message("3Q")
-                        if back != "aer" and internet_on():
-                            hat.set_pixels(IBMQ_super_position)
-                        else:
-                            hat.set_pixels(super_position)
-                        q3_calling_sense_func.execute(backend,back)
-                    else:
-                        if joy_event[0][1]=="middle":
-                            if back == "aer":
-                                hat.show_message("Best")
-                                hat.set_pixels(IBMQ_super_position)
-                                back = "ibmq_best"
-                                set_backend(back)
-                            else:
-                                back = "aer"
-                                set_backend(back)
+            print("Backend: aer simulator")
+            back = "aer"
+        show_super_position(back)
+        set_backend(back)
+    else:
+        if event.action == ACTION_HELD:
+            print("Middle ACTION_HELD")
+            quit()
+
+
+hat.stick.get_events() # empty the event buffer
+print("starting main loop")
+while True:
+    hat.stick.direction_up = pushed_up
+    hat.stick.direction_down = pushed_down
+    hat.stick.direction_left = pushed_left
+    hat.stick.direction_right = pushed_right
+    hat.stick.direction_middle = pushed_middle

@@ -1,2 +1,5 @@
 .gitignore
 Qconfig_IBMQ_experience.py
+qrasp-isrunning
+nohup.out
+__pycache__
