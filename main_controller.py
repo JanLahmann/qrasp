@@ -5,6 +5,7 @@ from sense_hat import SenseHat, ACTION_PRESSED, ACTION_HELD
 #from sense_emu import SenseHat
 hat = SenseHat()
 from time import sleep
+import os
 
 
 # Understand which direction is down, and rotate the SenseHat display accordingly.
@@ -61,7 +62,7 @@ def show_pic(name, pic):
     #global hat
     print(name)
     hat.set_pixels(pic)
-    sleep(4)
+    sleep(1)
 
 # Background icon
 X = [255, 0, 255]  # Magenta
@@ -151,12 +152,15 @@ def set_backend(back):
         backend = least_busy(provider.backends(filters=lambda x: x.configuration().n_qubits >= 3 
                                                         and not x.configuration().simulator
                                                         and x.status().operational==True))        
+        print("Backend:", backend.name())
         hat.show_message(backend.name())
         hat.set_pixels(IBM_Q_B)
     else:
         backend = Aer.get_backend('qasm_simulator')
+        print("Backend:", backend.name())
         hat.show_message(backend.name())
         hat.set_pixels(IBM_AER)
+    hat.stick.get_events() # empty the event buffer
                 
     
 # Load the Qiskit function files. Showing messages when starting and when done.
@@ -182,11 +186,12 @@ def show_super_position(back):
         hat.set_pixels(IBMQ_super_position)
     else:
         hat.set_pixels(super_position)
+    sleep(1)
 
 def pushed_up(event):
     global hat, backend, back
     if event.action == ACTION_PRESSED:
-        print("Bell on ", back)
+        print("Bell on", back)
         hat.show_message("Bell")
         show_super_position(back)
         bell_calling_sense_func.execute(backend,back)
@@ -195,7 +200,7 @@ def pushed_up(event):
 def pushed_down(event):
     global hat, backend, back
     if event.action == ACTION_PRESSED:
-        print("GHZ on ", back)
+        print("GHZ on", back)
         hat.show_message("GHZ")
         show_super_position(back)
         GHZ_calling_sense_func.execute(backend,back)
@@ -204,7 +209,7 @@ def pushed_down(event):
 def pushed_left(event):
     global hat, backend, back
     if event.action == ACTION_PRESSED:
-        print("2Q on ", back)
+        print("2Q on", back)
         hat.show_message("2Q")
         show_super_position(back)
         q2_calling_sense_func.execute(backend,back)
@@ -213,7 +218,7 @@ def pushed_left(event):
 def pushed_right(event):
     global hat, backend, back
     if event.action == ACTION_PRESSED:
-        print("3Q on ", back)
+        print("3Q on", back)
         hat.show_message("3Q")
         show_super_position(back)
         q3_calling_sense_func.execute(backend,back)
@@ -221,6 +226,15 @@ def pushed_right(event):
 
 def pushed_middle(event):
     global hat, backend, back
+    #event2 = hat.stick.wait_for_event(emptybuffer=True)
+    event2 = hat.stick.wait_for_event()
+    print("The joystick was {} {}".format(event2.action, event2.direction))
+    if event2.action == ACTION_HELD:
+        print("event2 Middle ACTION_HELD")
+        print("Exiting...")
+        hat.show_message("Exiting...")
+        sense.clear()
+        os._exit(0)
     if event.action == ACTION_PRESSED:
         print("Middle ACTION_PRESSED")
         if back == "aer" and internet_on():
@@ -232,10 +246,6 @@ def pushed_middle(event):
             back = "aer"
         show_super_position(back)
         set_backend(back)
-    else:
-        if event.action == ACTION_HELD:
-            print("Middle ACTION_HELD")
-            quit()
 
 
 hat.stick.get_events() # empty the event buffer
