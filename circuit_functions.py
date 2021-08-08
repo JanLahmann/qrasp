@@ -11,17 +11,16 @@ from qiskit import execute
 # Set number of number of shots
 sh = 1024
 
-def Bell_circuit(circuit):
+def q2_circuit(circuit):
     circuit.h(qr[0])
     circuit.h(qr[1])
     circuit.measure(qr[0], cr[0])
     circuit.measure(qr[1], cr[1])
 
-
 # Define the execute function that is called by the main controller.
 def execute(circuit_name, backend, back, hat):
-    print(circuit, "on", back)
-    hat.show_message(circuit)
+    print(circuit_name, "on", back)
+    hat.show_message(circuit_name)
     show_super_position(back)
     # Set number of bits and number of shots
     n = 2
@@ -33,7 +32,7 @@ def execute(circuit_name, backend, back, hat):
     circuit = QuantumCircuit(qr, cr)
     
     # Add gates to the circuit
-    Bell_circuit(circuit)
+    q2_circuit(circuit)
     # circuit.h(qr[0])
     # circuit.h(qr[1])
     # circuit.measure(qr[0], cr[0])

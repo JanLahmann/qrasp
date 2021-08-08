@@ -4,9 +4,14 @@
 from sense_hat import SenseHat, ACTION_PRESSED, ACTION_HELD
 #from sense_emu import SenseHat
 hat = SenseHat()
+# Set default SenseHat configuration.
+hat.clear()
+hat.low_light = True
+
 from time import sleep
 import os
-
+# Import the Raspberry PI SenseHat display function.
+from qc_sensehat_func import SenseDisplay
 
 # Understand which direction is down, and rotate the SenseHat display accordingly.
 def set_display():
@@ -30,7 +35,7 @@ def set_display():
 
 set_display()       
 
-#Check if online
+# Check if online
 from urllib.request import urlopen
 
 def internet_on():
@@ -40,9 +45,9 @@ def internet_on():
     except:
         return False
 
-#Import Qiskit classes
-from qiskit import IBMQ, execute
-from qiskit import BasicAer as Aer #<-Workaround
+# Import Qiskit classes
+from qiskit import IBMQ, execute, QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit import BasicAer
 from qiskit.providers.ibmq import least_busy
 import Qconfig_IBMQ_experience
 # from qiskit.tools.monitor import job_monitor
@@ -53,13 +58,8 @@ if internet_on():
 else:
     hat.show_message("Offline mode")
 
-
-# Set default SenseHat configuration.
-hat.clear()
-hat.low_light = True
-
+# display pics/logos on the SenseHAT
 def show_pic(name, pic):
-    #global hat
     print(name)
     hat.set_pixels(pic)
     sleep(1)
@@ -156,30 +156,18 @@ def set_backend(back):
         hat.show_message(backend.name())
         hat.set_pixels(IBM_Q_B)
     else:
-        backend = Aer.get_backend('qasm_simulator')
+        backend = BasicAer.get_backend('qasm_simulator')
         print("Backend:", backend.name())
         hat.show_message(backend.name())
         hat.set_pixels(IBM_AER)
     hat.stick.get_events() # empty the event buffer
-                
-    
-# Load the Qiskit function files. Showing messages when starting and when done.
-hat.show_message("Qiskit")
-
-import q2_calling_sense_func
-import q3_calling_sense_func
-import bell_calling_sense_func
-import GHZ_calling_sense_func
 
 # Initialize the backend to AER
+hat.show_message("Qiskit")
 back = "aer" 
 set_backend(back)
 
-
-# The main loop.
-# Use the joystick to select and execute one of the Qiskit function files.
-# see examples in https://pythonhosted.org/sense-hat/api/
-
+# Display logo for simulator or IBMQ 
 def show_super_position(back):
     global hat, super_position, IBMQ_super_position 
     if back != "aer" and internet_on():
@@ -188,45 +176,101 @@ def show_super_position(back):
         hat.set_pixels(super_position)
     sleep(1)
 
+# Define the circuits
+def bell_circuit(circuit, qr, cr):
+    circuit.h(qr[0])
+    circuit.cx(qr[0], qr[1])
+    circuit.measure(qr[0], cr[0])
+    circuit.measure(qr[1], cr[1])
+
+def q2_circuit(circuit, qr, cr):
+    circuit.h(qr[0])
+    circuit.h(qr[1])
+    circuit.measure(qr[0], cr[0])
+    circuit.measure(qr[1], cr[1])    
+
+def q3_circuit(circuit, qr, cr):
+    circuit.h(qr[0])
+    circuit.h(qr[1])
+    circuit.h(qr[2])
+    circuit.measure(qr[0], cr[0])
+    circuit.measure(qr[1], cr[1])
+    circuit.measure(qr[2], cr[2]) 
+
+def GHZ_circuit(circuit, qr, cr):
+    circuit.h(qr[0])
+    circuit.cx(qr[0], qr[1])
+    circuit.cx(qr[0], qr[2])
+    circuit.measure(qr[0], cr[0])
+    circuit.measure(qr[1], cr[1])
+    circuit.measure(qr[2], cr[2])
+    
+
+# Build and execute the circuits, and display the results
+def do_circuit(circuit_name, backend, back, hat):
+    print(circuit_name, "on", back)
+    hat.show_message(circuit_name)
+    show_super_position(back)
+    n = 2 # Set number of bits and number of shots
+    if circuit_name == "3Q" or circuit_name == "GHZ":
+        n=3
+    sh = 1024 # Set number of number of shots
+    qr = QuantumRegister(n) # Create a Quantum Register with n qubits
+    cr = ClassicalRegister(n) # Create a Classical Register with n bits
+    circuit = QuantumCircuit(qr, cr) # Create a Quantum Circuit acting on the qr and cr register
+    
+    # build the circuit
+    if circuit_name == "Bell":
+        bell_circuit(circuit, qr, cr)
+    elif circuit_name == "2Q":
+        q2_circuit(circuit, qr, cr)
+    elif circuit_name == "3Q":
+        q3_circuit(circuit, qr, cr)
+    else:
+        GHZ_circuit(circuit, qr, cr)
+
+    # Create a Quantum Program for execution of the circuit on the selected backend
+    job = execute(circuit, backend, shots=sh)
+    result = job.result() # Get the result of the execution
+    Qdictres = result.get_counts(circuit)
+    
+    print ("Results:", Qdictres) # Print the results
+    # Display the quantum dictionary as a bar graph on the SenseHat 8x8 pixel display by calling the SenseDisplay function.
+    SenseDisplay(Qdictres,n,back)
+
+    hat.stick.get_events() # empty the event buffer
+
+
+# The main loop.
+# Use the joystick to select and execute one of the Qiskit function files.
+# see examples in https://pythonhosted.org/sense-hat/api/
+
 def pushed_up(event):
     global hat, backend, back
     if event.action == ACTION_PRESSED:
-        print("Bell on", back)
-        hat.show_message("Bell")
-        show_super_position(back)
-        bell_calling_sense_func.execute(backend,back)
-        hat.stick.get_events() # empty the event buffer
-
-def pushed_down(event):
-    global hat, backend, back
-    if event.action == ACTION_PRESSED:
-        print("GHZ on", back)
-        hat.show_message("GHZ")
-        show_super_position(back)
-        GHZ_calling_sense_func.execute(backend,back)
-        hat.stick.get_events() # empty the event buffer
+        circuit_name = "Bell"
+        do_circuit(circuit_name, backend, back, hat)
 
 def pushed_left(event):
     global hat, backend, back
     if event.action == ACTION_PRESSED:
-        print("2Q on", back)
-        hat.show_message("2Q")
-        show_super_position(back)
-        q2_calling_sense_func.execute(backend,back)
-        hat.stick.get_events() # empty the event buffer
-
+        circuit_name = "2Q"
+        do_circuit(circuit_name, backend, back, hat)
+      
 def pushed_right(event):
     global hat, backend, back
     if event.action == ACTION_PRESSED:
-        print("3Q on", back)
-        hat.show_message("3Q")
-        show_super_position(back)
-        q3_calling_sense_func.execute(backend,back)
-        hat.stick.get_events() # empty the event buffer
+        circuit_name = "3Q"
+        do_circuit(circuit_name, backend, back, hat)
+
+def pushed_down(event):
+    global hat, backend, back
+    if event.action == ACTION_PRESSED:
+        circuit_name = "GHZ"
+        do_circuit(circuit_name, backend, back, hat)
 
 def pushed_middle(event):
     global hat, backend, back
-    #event2 = hat.stick.wait_for_event(emptybuffer=True)
     event2 = hat.stick.wait_for_event()
     print("The joystick was {} {}".format(event2.action, event2.direction))
     if event2.action == ACTION_HELD:
@@ -247,12 +291,12 @@ def pushed_middle(event):
         show_super_position(back)
         set_backend(back)
 
-
+from signal import pause
 hat.stick.get_events() # empty the event buffer
 print("starting main loop")
-while True:
-    hat.stick.direction_up = pushed_up
-    hat.stick.direction_down = pushed_down
-    hat.stick.direction_left = pushed_left
-    hat.stick.direction_right = pushed_right
-    hat.stick.direction_middle = pushed_middle
+hat.stick.direction_up = pushed_up
+hat.stick.direction_down = pushed_down
+hat.stick.direction_left = pushed_left
+hat.stick.direction_right = pushed_right
+hat.stick.direction_middle = pushed_middle
+pause()
