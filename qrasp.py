@@ -275,11 +275,11 @@ def pushed_middle(event):
     if event2.action == ACTION_HELD:
         print("Middle ACTION_HELD")
         print("Exiting...")
-        hat.show_message("Exiting...")
-#        hat.show_message("Shutdown...")
+#        hat.show_message("Exiting...")
+        hat.show_message("Shutdown...")
         hat.clear()
-        os._exit(0)
- #       os.system('sudo halt')
+#        os._exit(0)
+        os.system('sudo halt')
     if event.action == ACTION_PRESSED:
         print("Middle ACTION_PRESSED")
         if back == "aer" and internet_on():
