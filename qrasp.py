@@ -53,7 +53,8 @@ import Qconfig_IBMQ_experience
 
 # If online, enable the account based on the stored API key
 if internet_on():
-    provider = IBMQ.enable_account(Qconfig_IBMQ_experience.APItoken)
+    # provider = IBMQ.enable_account(Qconfig_IBMQ_experience.APItoken)
+    provider=IBMQ.load_account()
 else:
     hat.show_message("Offline mode")
 
