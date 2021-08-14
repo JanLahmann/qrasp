@@ -273,7 +273,7 @@ import atexit, signal
 def call_sense_menu():
     global hat
     hat.clear()
-    os.system("/usr/bin/python3 /home/pi/.local/bin/rq_sense_menu.py")
+    os.system("nohup /home/pi/.local/bin/rq_sense_menu_run.sh &")
 
 def pushed_middle(event):
     global hat, backend, back
@@ -287,18 +287,18 @@ def pushed_middle(event):
 #        hat.clear()
 #        os._exit(0)
         # option 2: shutdown raspberry
-        hat.show_message("Shutdown...")
-        hat.clear()
-        os.system('sudo halt')
-        # option 3: exit and start menu (does not work)
-#        hat.show_message("Menu...")
+#        hat.show_message("Shutdown...")
 #        hat.clear()
-#        atexit.register(call_sense_menu)
-#        cmd="sleep 2 && kill -INT " + str(os.getpid()) + "\n sleep 2 && kill -TERM " + str(os.getpid())
-#        with open('cmd.sh', 'w') as f:
-#            print(cmd, file=f)  
-#        os.system("nohup sh cmd.sh &")
-#        exit()
+#        os.system('sudo halt')
+        # option 3: exit and start menu (does not work)
+        hat.show_message("Menu...")
+        hat.clear()
+        atexit.register(call_sense_menu)
+        cmd="sleep 2 && kill -INT " + str(os.getpid()) + "\n sleep 2 && kill -TERM " + str(os.getpid())
+        with open('cmd.sh', 'w') as f:
+            print(cmd, file=f)  
+        os.system("nohup sh cmd.sh &")
+        exit()
     if event.action == ACTION_PRESSED:
         print("Middle ACTION_PRESSED")
         if back == "aer" and internet_on():
@@ -320,3 +320,5 @@ hat.stick.direction_left = pushed_left
 hat.stick.direction_right = pushed_right
 hat.stick.direction_middle = pushed_middle
 pause()
+sleep(2)
+os._exit()
