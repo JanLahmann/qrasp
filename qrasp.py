@@ -269,10 +269,6 @@ def pushed_down(event):
         circuit_name = "GHZ"
         do_circuit(circuit_name, backend, back, hat)
 
-import atexit, signal
-def call_sense_menu():
-    os.system("touch /home/pi/rq_sense_menu_run.sh.log")
-    os.system("nohup /home/pi/.local/bin/rq_sense_menu_run.sh &")
 
 def pushed_middle(event):
     global hat, backend, back
@@ -293,17 +289,9 @@ def pushed_middle(event):
         # option 3: exit and start menu (DOES NOT WORK)
         hat.show_message("Menu...")
         hat.clear()
-#        atexit.register(call_sense_menu)
-        sleep(2)
         os.system("nohup /home/pi/.local/bin/rq_sense_menu_run.sh &")
-#        os.kill(os.getpid(), signal.SIGINT)
-#        cmd="sleep 2 && kill -INT " + str(os.getpid()) + "\n sleep 2 && kill -TERM " + str(os.getpid())
-#        with open('cmd.sh', 'w') as f:
-#            print(cmd, file=f)  
-#        os.system("nohup sh cmd.sh &")
         sleep(2)
         os._exit(0)
-        exit()
     if event.action == ACTION_PRESSED:
         print("Middle ACTION_PRESSED")
         if back == "aer" and internet_on():
