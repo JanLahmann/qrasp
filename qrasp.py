@@ -271,6 +271,7 @@ def pushed_down(event):
 
 import atexit, signal
 def call_sense_menu():
+    os.system("touch /home/pi/rq_sense_menu_run.sh.log")
     os.system("nohup /home/pi/.local/bin/rq_sense_menu_run.sh &")
 
 def pushed_middle(event):
@@ -285,14 +286,14 @@ def pushed_middle(event):
 #        hat.clear()
 #        os._exit(0)
         # option 2: shutdown raspberry
-        hat.show_message("Shutdown...")
-        hat.clear()
-        os.system('sudo halt')
-        sleep(5)
-        # option 3: exit and start menu (DOES NOT WORK)
-#        hat.show_message("Menu...")
+#        hat.show_message("Shutdown...")
 #        hat.clear()
-#        atexit.register(call_sense_menu)
+#        os.system('sudo halt')
+#        sleep(5)
+        # option 3: exit and start menu (DOES NOT WORK)
+        hat.show_message("Menu...")
+        hat.clear()
+        atexit.register(call_sense_menu)
 #        os.kill(os.getpid(), signal.SIGINT)
 #        cmd="sleep 2 && kill -INT " + str(os.getpid()) + "\n sleep 2 && kill -TERM " + str(os.getpid())
 #        with open('cmd.sh', 'w') as f:
