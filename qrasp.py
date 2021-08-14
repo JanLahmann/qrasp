@@ -277,19 +277,10 @@ def pushed_middle(event):
     if event2.action == ACTION_HELD:
         print("Middle ACTION_HELD")
         print("Exiting...")
-        # option 1: exit the script
-#        hat.show_message("Exiting...")
-#        hat.clear()
-#        os._exit(0)
-        # option 2: shutdown raspberry
-#        hat.show_message("Shutdown...")
-#        hat.clear()
-#        os.system('sudo halt')
-#        sleep(5)
-        # option 3: exit and start menu (DOES NOT WORK)
         hat.show_message("Menu...")
         hat.clear()
         os.system("nohup /home/pi/.local/bin/rq_sense_menu_run.sh &")
+        # os.system('sudo halt') # to sutdown instead of return to menu
         sleep(2)
         os._exit(0)
     if event.action == ACTION_PRESSED:
