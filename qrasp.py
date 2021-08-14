@@ -300,6 +300,8 @@ def pushed_middle(event):
 #        with open('cmd.sh', 'w') as f:
 #            print(cmd, file=f)  
 #        os.system("nohup sh cmd.sh &")
+        sleep(2)
+        os._exit(0)
         exit()
     if event.action == ACTION_PRESSED:
         print("Middle ACTION_PRESSED")
