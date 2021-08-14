@@ -293,9 +293,10 @@ def pushed_middle(event):
         # option 3: exit and start menu (DOES NOT WORK)
         hat.show_message("Menu...")
         hat.clear()
-        atexit.register(call_sense_menu)
+#        atexit.register(call_sense_menu)
         sleep(2)
-        os.kill(os.getpid(), signal.SIGINT)
+        os.system("nohup /home/pi/.local/bin/rq_sense_menu_run.sh &")
+#        os.kill(os.getpid(), signal.SIGINT)
 #        cmd="sleep 2 && kill -INT " + str(os.getpid()) + "\n sleep 2 && kill -TERM " + str(os.getpid())
 #        with open('cmd.sh', 'w') as f:
 #            print(cmd, file=f)  
