@@ -295,7 +295,7 @@ def pushed_middle(event):
         hat.clear()
         atexit.register(call_sense_menu)
         sleep(2)
-#        os.kill(os.getpid(), signal.SIGINT)
+        os.kill(os.getpid(), signal.SIGINT)
 #        cmd="sleep 2 && kill -INT " + str(os.getpid()) + "\n sleep 2 && kill -TERM " + str(os.getpid())
 #        with open('cmd.sh', 'w') as f:
 #            print(cmd, file=f)  
