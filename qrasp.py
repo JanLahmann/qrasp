@@ -294,12 +294,13 @@ def pushed_middle(event):
         hat.show_message("Menu...")
         hat.clear()
         atexit.register(call_sense_menu)
+        sleep(2)
 #        os.kill(os.getpid(), signal.SIGINT)
 #        cmd="sleep 2 && kill -INT " + str(os.getpid()) + "\n sleep 2 && kill -TERM " + str(os.getpid())
 #        with open('cmd.sh', 'w') as f:
 #            print(cmd, file=f)  
 #        os.system("nohup sh cmd.sh &")
-#        exit()
+        exit()
     if event.action == ACTION_PRESSED:
         print("Middle ACTION_PRESSED")
         if back == "aer" and internet_on():
