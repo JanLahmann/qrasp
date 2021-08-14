@@ -288,6 +288,7 @@ def pushed_middle(event):
         hat.show_message("Shutdown...")
         hat.clear()
         os.system('sudo halt')
+        sleep(5)
         # option 3: exit and start menu (DOES NOT WORK)
 #        hat.show_message("Menu...")
 #        hat.clear()
