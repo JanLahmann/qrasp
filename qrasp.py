@@ -281,7 +281,7 @@ def pushed_middle(event):
         hat.clear()
         os.system("nohup /home/pi/.local/bin/rq_sense_menu_run.sh &")
         # os.system('sudo halt') # to sutdown instead of return to menu
-        sleep(2)
+        sleep(1)
         os._exit(0)
     if event.action == ACTION_PRESSED:
         print("Middle ACTION_PRESSED")
